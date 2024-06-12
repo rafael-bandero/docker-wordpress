@@ -1,0 +1,14 @@
+.env
+mysql
+wordpress/*
+!wordpress/wp-content
+
+wordpress/wp-content/*
+!wordpress/wp-content/plugins
+!wordpress/wp-content/themes
+
+wordpress/wp-content/plugins/*
+!wordpress/wp-content/plugins/custom
+
+wordpress/wp-content/themes/*
+!wordpress/wp-content/themes/custom
