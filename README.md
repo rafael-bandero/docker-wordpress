@@ -1,4 +1,5 @@
 ## Wordpress with Docker
+Basic Docker environment to execute Wordpress in localhost with SSL enabled
 
 ### TODO
 
