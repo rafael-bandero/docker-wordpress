@@ -25,3 +25,8 @@ openssl x509 -req -days 365 -in nginx/certs/localhost.csr -signkey nginx/certs/l
 ```bash
 docker-compose up -d
 ```
+
+### Usage
+Access https://localhost and finish standard WP installation.
+
+Folders `wp-content/plugins/custom` and `wp-content/themes/custom` are marked as exceptions in `.gitignore` to be used to start including customizations.
