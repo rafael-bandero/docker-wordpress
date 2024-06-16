@@ -4,11 +4,9 @@ services:
     container_name: db
     restart: unless-stopped
     env_file: .env
-    environment:
-      - MYSQL_DATABASE=$MYSQL_DB_NAME
     volumes:
-      - ./mysql:/var/lib/mysql
-    command: '--default-authentication-plugin=mysql_native_password'
+      - db-data:/var/lib/mysql
+    command: '--default-authentication-plugin=caching_sha2_password'
     networks:
       - app-network
 
@@ -23,9 +21,11 @@ services:
       - WORDPRESS_DB_HOST=db:3306
       - WORDPRESS_DB_USER=$MYSQL_USER
       - WORDPRESS_DB_PASSWORD=$MYSQL_PASSWORD
-      - WORDPRESS_DB_NAME=$MYSQL_DB_NAME
+      - WORDPRESS_DB_NAME=$MYSQL_DATABASE
     volumes:
-      - ./wordpress:/var/www/html
+      - wordpress-data:/var/www/html
+      - ./wordpress/wp-content/plugins/custom:/var/www/html/wp-content/plugins/custom
+      - ./wordpress/wp-content/themes/custom:/var/www/html/wp-content/themes/custom
     networks:
       - app-network
 
@@ -39,7 +39,7 @@ services:
       - 80:80
       - 443:443
     volumes:
-      - ./wordpress:/var/www/html
+      - wordpress-data:/var/www/html
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./nginx/certs:/etc/nginx/certs
     networks:
@@ -48,3 +48,7 @@ services:
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  db-data:
+  wordpress-data:
