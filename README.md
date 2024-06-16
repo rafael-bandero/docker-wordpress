@@ -29,4 +29,4 @@ docker-compose up -d
 
 ### Usage
 
-Folders `wp-content/plugins/custom` and `wp-content/themes/custom` are marked as exceptions in `.gitignore` to be used to start including customizations.
+Folders `wordpress/wp-content/plugins/custom` and `wordpress/wp-content/themes/custom` are mapped in Docker config and marked as exceptions in `.gitignore` to be used to start including customizations.
