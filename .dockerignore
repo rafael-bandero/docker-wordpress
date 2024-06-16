@@ -1,5 +1,4 @@
 .env
-mysql
 wordpress/*
 !wordpress/wp-content
 
