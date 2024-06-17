@@ -1,4 +1,6 @@
 .env
+nginx/certs
+
 wordpress/*
 !wordpress/wp-content
 
