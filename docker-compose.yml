@@ -3,6 +3,8 @@ services:
     image: mysql:8.0
     container_name: db
     restart: unless-stopped
+    ports:
+      - 3306:3306
     env_file: .env
     volumes:
       - db-data:/var/lib/mysql
@@ -18,7 +20,7 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      - WORDPRESS_DB_HOST=db:3306
+      - WORDPRESS_DB_HOST=db
       - WORDPRESS_DB_USER=$MYSQL_USER
       - WORDPRESS_DB_PASSWORD=$MYSQL_PASSWORD
       - WORDPRESS_DB_NAME=$MYSQL_DATABASE
@@ -51,4 +53,6 @@ networks:
 
 volumes:
   db-data:
+    driver: local
   wordpress-data:
+    driver: local
