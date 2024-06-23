@@ -3,7 +3,7 @@ Basic Docker environment to execute Wordpress in localhost with SSL enabled
 
 ### Install and Run
 
-- Create a `.env` file using `.env-example` as a model
+- Create a `.env` file using `.env.example` as a model
 - Start containers:
 
 ```bash

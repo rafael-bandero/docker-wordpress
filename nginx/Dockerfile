@@ -13,7 +13,7 @@ ARG ST="Santa Catarina"
 ARG L="Imbituba"
 
 # Organization Name (eg, company)
-ARG O="Frelancer S.A."
+ARG O="Freelancer S.A."
 
 # Cert Domain
 ARG CN="${DOMAIN}"
