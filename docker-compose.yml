@@ -1,0 +1,110 @@
+services:
+
+  db:
+    image: mariadb:${MARIADB_VERSION:-11.4}
+    container_name: ${PROJECT_NAME:-wp}_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${DB_NAME:-wordpress}
+      MYSQL_USER: ${DB_USER:-wordpress}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-wordpress}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u${DB_USER:-wordpress}", "-p${DB_PASSWORD:-wordpress}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [wpnet]
+
+  # -------------------------------------------------------------------------
+  # WordPress version is fully configurable via .env (WORDPRESS_VERSION,
+  # PHP_VERSION). Bump it whenever you want to test/roll out a WP update.
+  # -------------------------------------------------------------------------
+  wordpress:
+    image: wordpress:${WORDPRESS_VERSION:-latest}-php${PHP_VERSION:-8.3}-apache
+    container_name: ${PROJECT_NAME:-wp}_wordpress
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ${DB_NAME:-wordpress}
+      WORDPRESS_DB_USER: ${DB_USER:-wordpress}
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD:-wordpress}
+      WORDPRESS_TABLE_PREFIX: ${DB_TABLE_PREFIX:-wp_}
+      WORDPRESS_DEBUG: ${WORDPRESS_DEBUG:-1}
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_HOME', '${WP_HOME:-http://localhost:8080}');
+        define('WP_SITEURL', '${WP_HOME:-http://localhost:8080}');
+        define('FS_METHOD', 'direct');
+    ports:
+      - "${WORDPRESS_PORT:-8080}:80"
+    volumes:
+      # WordPress core lives in a named (docker-managed) volume, NOT a bind
+      # mount -> it physically cannot end up in the git repo, satisfying
+      # "core files should not be tracked by git" with zero .gitignore rules.
+      - wp_core:/var/www/html
+      # Custom + third-party plugins: bind-mounted so edits on the host are
+      # picked up immediately by PHP/Apache (no rebuild, no copy step).
+      - ./wp-content/plugins:/var/www/html/wp-content/plugins
+      # Custom + third-party themes: bind-mounted so edits on the host are
+      # picked up immediately by PHP/Apache (no rebuild, no copy step).
+      - ./wp-content/themes:/var/www/html/wp-content/themes
+      # Uploads: bind-mounted so the imported media library is easy to
+      # inspect/back up from the host, and survives volume resets.
+      - ./wp-content/uploads:/var/www/html/wp-content/uploads
+    networks: [wpnet]
+
+  # -------------------------------------------------------------------------
+  # One-shot initializer: imports the production DB dump + extracts the
+  # uploads/plugins archives on first run, applies compatibility patches to
+  # third-party plugins/themes, then writes a marker file so it never
+  # repeats itself. It is NOT started by `docker compose up` (see the "init"
+  # profile) - run it explicitly the first time via `make first-run` or
+  # `make init`. This also doubles as a general wp-cli runner (`make wp
+  # <command>`) and the patch runner (`make patch`).
+  #
+  # Runs as root (uid 0): the wordpress:cli image defaults to www-data,
+  # which cannot write into host-owned bind mounts nor chown them afterward
+  # for the 'wordpress' service to use. Root here fixes both.
+  # -------------------------------------------------------------------------
+  wpcli:
+    build:
+      context: .
+      dockerfile: ./docker/wpcli.Dockerfile
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.3}
+    container_name: ${PROJECT_NAME:-wp}_wpcli
+    user: "0:0"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ${DB_NAME:-wordpress}
+      WORDPRESS_DB_USER: ${DB_USER:-wordpress}
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD:-wordpress}
+      WORDPRESS_TABLE_PREFIX: ${DB_TABLE_PREFIX:-wp_}
+      WP_HOME: ${WP_HOME:-http://localhost:8080}
+      PROD_URL: ${PROD_URL:-}
+    volumes:
+      - wp_core:/var/www/html
+      - ./wp-content/plugins:/var/www/html/wp-content/plugins
+      - ./wp-content/themes:/var/www/html/wp-content/themes
+      - ./wp-content/uploads:/var/www/html/wp-content/uploads
+      - ./init-data:/init-data:ro
+      - ./patches:/patches:ro
+      - ./scripts:/scripts:ro
+    entrypoint: ["/bin/sh", "/scripts/init.sh"]
+    profiles: ["init"]
+    networks: [wpnet]
+
+volumes:
+  db_data:
+  wp_core:
+
+networks:
+  wpnet:

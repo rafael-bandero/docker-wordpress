@@ -1,0 +1,20 @@
+# wp-content/plugins/ is bind-mounted as ONE folder so WordPress can see
+# everything in a single flat directory, but only YOUR custom plugins are
+# tracked by git. Everything else (third-party plugins, whatever gets
+# extracted from init-data/plugins*.tar.gz, anything installed from the WP
+# admin) is ignored by default.
+#
+# Convention: every locally-developed plugin folder must be prefixed with
+# "acme-" (rename to your own project/company prefix, e.g. "acme-" ->
+# "yourco-"). That's the ONLY thing that decides whether a plugin folder is
+# versioned or not - no need to keep editing this file as you add plugins.
+ 
+# 1. Ignore everything in this directory...
+*
+ 
+# 2. ...except this file itself...
+!.gitignore
+ 
+# 3. ...and any custom plugin folder matching the prefix (and its contents).
+!acme-*/
+!acme-*/**

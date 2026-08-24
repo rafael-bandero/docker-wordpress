@@ -1,0 +1,24 @@
+# Local secrets/config
+.env
+ 
+# WordPress core itself is never bind-mounted (it lives in the wp_core
+# docker volume), so there is nothing to ignore for it here.
+ 
+# Drop zone for the production dump / archives - never commit customer data
+/init-data/*
+!/init-data/.gitkeep
+!/init-data/README.md
+ 
+# Media library - never versioned
+/wp-content/uploads/*
+!/wp-content/uploads/.gitkeep
+ 
+# In case anyone points db volume at a host path locally
+/db-data/
+ 
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log

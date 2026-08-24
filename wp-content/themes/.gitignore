@@ -1,0 +1,20 @@
+# wp-content/themes/ is bind-mounted as ONE folder so WordPress can see
+# everything in a single flat directory, but only YOUR custom themes are
+# tracked by git. Everything else (third-party themes, whatever gets
+# extracted from init-data/themes*.tar.gz, anything installed from the WP
+# admin) is ignored by default.
+#
+# Convention: every locally-developed theme folder must be prefixed with
+# "acme-" (rename to your own project/company prefix, e.g. "acme-" ->
+# "yourco-"). That's the ONLY thing that decides whether a theme folder is
+# versioned or not - no need to keep editing this file as you add themes.
+
+# 1. Ignore everything in this directory...
+*
+
+# 2. ...except this file itself...
+!.gitignore
+
+# 3. ...and any custom theme folder matching the prefix (and its contents).
+!acme-*/
+!acme-*/**
